@@ -1,0 +1,143 @@
+"Tan cong 1 tren EC-Schnorr";
+"Sinh chu ky EC-Schnorr";
+p:=115792089210356248762697446949407573530086143415290314195533631308867097853951;
+K := GF(p);
+E:=EllipticCurve([K|-3,41058363725152142129326129780047268409114441015993725554835256314039467401291]);
+q:=115792089210356248762697446949407573529996955224135760342422259061068512044369;
+P:=E![48439561293906451759052585252797914202762949526041747995844080717082404635286,36134250956749795798585127919587881956611106672985015071877198253568414405109];
+a:=Random(q);
+Q:=a*P;
+
+sothongdiep:=[70];
+sobitlap:=[14];
+
+for o:=1 to 1 do
+dem:=0;
+t:=Cputime();
+
+for th:=1 to 1 do
+hm:=[];
+k:=[];
+n:=sothongdiep[o];
+w:=sobitlap[o];
+y:=[];
+x:=[];
+
+N:=Ilog2(q);
+for i:=1 to n+1 do
+hm[i]:=Random(q);
+x[i]:=Random(2^(N-2*w));
+y[i]:=Random(2^w);
+k[i]:=x[i]*2^(2*w)+y[i]*(1+2^w);
+end for;
+
+// Sinh chu ky
+s:=[];
+r:=[];
+kp_seq:=[];
+C:=[];
+m:=[];
+
+for i:=1 to n+1 do
+rtg1:=[];
+rtg2:=[];
+mtg2:=[];
+mtg3:=[];
+m[i]:=Random(2^256);
+C[i]:=k[i]*P;
+kp_seq[i] := ElementToSequence (C[i]);
+mtg2:=IntegerToString(m[i],2);
+rtg2:= (IntegerRing()!kp_seq[i][1]) mod q;
+rtg1:=IntegerToString(rtg2,2);
+mtg3:= mtg2 cat rtg1;
+
+r[i]:=StringToInteger(mtg3,2) mod q;
+if r[i] eq 0 then
+"Thuc hien sinh lai k";
+end if;
+s[i]:= (k[i] - a*r[i]) mod q;
+end for;
+
+// Kiem tra chu ky
+
+for i:=1 to n+1 do
+R:=[];
+R[i] := s[i]*P + r[i]*Q;
+temp_seq := ElementToSequence (R[i]);
+vtg1:=[];
+vtg2:=(IntegerRing()!temp_seq[1]) mod q;
+vtg1 := IntegerToString(vtg2,2);
+vtg3:=[];
+mtg2:=[];
+mtg2:=IntegerToString(m[i],2);
+vtg3:=mtg2 cat vtg1;
+
+v:=StringToInteger(vtg3,2) mod q;
+if v ne r[i] then
+"chu ky thu", i ,"la sai";
+end if;
+end for;
+
+W:=InverseMod((2^w+1),q);
+T:=2^(2*w) mod q;
+e:=[];
+b:=[];
+c:=(-T*W) mod q;
+d:=[];
+
+for i:=2 to n+1 do
+e[i]:=( W*(s[i]-s[1]*r[i]*InverseMod(r[1],q) ) ) mod q;
+b[i]:=( T*W*r[i]* InverseMod(r[1],q) ) mod q;
+d[i]:=( r[i]*InverseMod(r[1],q) ) mod q;
+end for;
+
+beta:=2^(N-2*w)*1000;
+es:=2^(2*w-N)*beta;
+te:=2^(-w)*beta;
+// khai bao ma tran 
+M := Matrix(RationalField(),(2*n+3),(2*n+3),[<i, i, es>: i in [2..(n+2)]]);
+// chen gia tri beta vao hang 1
+M1:=Matrix(RationalField(),1,(2*n+3),[<1, 1, beta>]);
+InsertBlock(~M, M1, 1, 1);
+
+M2:=Matrix(RationalField(),1,(2*n+3),[<1, n+3, te>]);
+InsertBlock(~M, M2, n+3, 1);
+
+M3 := Matrix(RationalField(),n,n,[<i, i, te*q>: i in [1..n]]);
+InsertBlock(~M, M3, n+4, n+4);
+
+M4:= Matrix(RationalField(),n,n,[<i, i, te*c>: i in [1..n]]);
+InsertBlock(~M, M4, n+4, 3);
+
+M5:= Matrix(RationalField(),n,1,[te*e[i]:i in [2 ..n+1]]);
+InsertBlock(~M, M5, n+4, 1);
+
+M6:= Matrix(RationalField(),n,1,[te*b[i]:i in [2 ..n+1]]);
+InsertBlock(~M, M6, n+4, 2);
+
+M7:= Matrix(RationalField(),n,1,[te*d[i]:i in [2 ..n+1]]);
+InsertBlock(~M, M7, n+4, n+3);
+
+Z := Matrix(RationalField(),(2*n+3),1,[<i+1, 1 , es*x[i]>: i in [1.. n+1]]);
+Z1 := Matrix(RationalField(),1,1,[<1,1,beta>]);
+InsertBlock(~Z, Z1, 1, 1);
+Z2 := Matrix(RationalField(),(n+1),1,[<i, 1 , te*y[i]>: i in [1.. n+1]]);
+InsertBlock(~Z, Z2,n+3,1);
+
+TM:=Transpose(M);
+L:=LLL(TM);
+
+chi1:=Abs(L[1][2])*es^(-1);
+chi2:=Abs(L[1][n+3])*te^(-1) ;
+khoa1:=(chi1*(2^(2*w))+chi2*(1+2^w));
+khoa2:=IntegerRing()!khoa1;
+khoa3:=(khoa2-s[1])*(InverseMod(r[1],q)) mod q;
+Q1:=khoa3*P;
+if Q1 eq Q then
+"Khoa ky dai han la",khoa3;
+dem:=dem+1;
+end if;
+end for;
+"So thong diep thanh cong",sothongdiep[o],dem;
+"thoi gian",o,Cputime(t);
+end for;
