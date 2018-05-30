@@ -1,4 +1,4 @@
-"Tan cong 1 tren EC-Schnorr";
+"Tan cong 1";
 "Sinh chu ky EC-Schnorr";
 p:=115792089210356248762697446949407573530086143415290314195533631308867097853951;
 K := GF(p);
@@ -8,14 +8,14 @@ P:=E![48439561293906451759052585252797914202762949526041747995844080717082404635
 a:=Random(q);
 Q:=a*P;
 
-sothongdiep:=[70];
-sobitlap:=[14];
+sothongdiep:=[70];   //Thiet lap so thong diep
+sobitlap:=[14];		// Thiet lap so bit lap
 
-for o:=1 to 1 do
+for o:=1 to 1 do		// Chon so thong diep trong mang
 dem:=0;
 t:=Cputime();
 
-for th:=1 to 1 do
+for th:=1 to 10 do	// Thiet lap so truong hop
 hm:=[];
 k:=[];
 n:=sothongdiep[o];
@@ -125,7 +125,8 @@ Z2 := Matrix(RationalField(),(n+1),1,[<i, 1 , te*y[i]>: i in [1.. n+1]]);
 InsertBlock(~Z, Z2,n+3,1);
 
 TM:=Transpose(M);
-L:=LLL(TM);
+L:=LLL(TM);  // su dung thuat toan LLL
+//L:=BKZ(TM,20); // su dung thuat toan BKZ
 
 chi1:=Abs(L[1][2])*es^(-1);
 chi2:=Abs(L[1][n+3])*te^(-1) ;
@@ -134,10 +135,10 @@ khoa2:=IntegerRing()!khoa1;
 khoa3:=(khoa2-s[1])*(InverseMod(r[1],q)) mod q;
 Q1:=khoa3*P;
 if Q1 eq Q then
-"Khoa ky dai han la",khoa3;
+//"Khoa ky dai han la",khoa3; // in ra khoa dai han neu muon
 dem:=dem+1;
 end if;
 end for;
-"So thong diep thanh cong",sothongdiep[o],dem;
+"So thong",sothongdiep[o],"so bit lap",sobitlap[o],"So lan thanh cong",dem;
 "thoi gian",o,Cputime(t);
 end for;
