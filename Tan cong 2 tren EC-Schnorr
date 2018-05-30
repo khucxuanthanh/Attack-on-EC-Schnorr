@@ -1,5 +1,5 @@
-"Tan cong 2 tren EC-Schnorr";
-"Sinh chu ky EC-Schnorr";
+"Tan cong 2";
+"Sinh chu ky...";
 p:=57896044618658097711785492504343953926634992332820282019728792003956564821041;
 K := GF(p);
 E:=EllipticCurve([K|7,43308876546767276905765904595650931995942111794451039583252968842033849580414]);
@@ -7,22 +7,22 @@ q:=57896044618658097711785492504343953927082934583725450622380973592137631069619
 P:=E![2,4018974056539037503335449422937059775635739389905545080690979365213431566280];
 
 
-u:=3;
+u:=3;  			// Thiet lap so khoang lap
 a:=Random(q);
 Q:=a*P;
 
-sothongdiep:=[30];
-sobitchung:=[9];
+sothongdiep:=[30];	// Thiet lap so thong diep
+sobitlap:=[9];		// Thiet lap so bit lap
 
 for o:=1 to 1 do
 dem:=0;
 t:=Cputime();
 
-for th:=1 to 1 do
+for th:=1 to 10 do
 hm:=[];
 k:=[];
 n:=sothongdiep[o];
-w:=sobitchung[o];
+w:=sobitlap[o];
 y:=[];
 x:=[];
 
@@ -87,7 +87,7 @@ if v ne r[i] then
 end if;
 end for;
 
-"Tan cong";
+//"Tan cong";
 
 W1:=0;
 for mh:=0 to u-1 do
@@ -107,7 +107,7 @@ b[i]:=( T*W*r[i]* InverseMod(r[1],q) ) mod q;
 d[i]:=(r[i]*InverseMod(r[1],q) ) mod q;
 end for;
 
-"Ma tran";
+//"Ma tran";
 beta:=2^(N-u*w)*1000;
 es:=2^(u*w-N)*beta;
 te:=2^(-w)*beta;
@@ -141,7 +141,8 @@ InsertBlock(~Z, Z1, 1, 1);
 Z2 := Matrix(RationalField(),(n+1),1,[<i, 1 , te*y[i]>: i in [1.. n+1]]);
 InsertBlock(~Z, Z2,n+3,1);
 TM:=Transpose(M);
-L:=LLL(TM);
+L:=LLL(TM);   			// Su dung thuat toan LLL
+// L:=BKZ(TM,20);   		// Su dung thuat toan BKZ
 chi1:=Abs(L[1][2])*es^(-1);
 chi2:=Abs(L[1][n+3])*te^(-1);
 
@@ -151,10 +152,10 @@ khoa3:=(khoa2-s[1])*(InverseMod(r[1],q)) mod q;
 Q1:=khoa3*P;
 
 if Q1 eq Q then
-//"Khoa ky dai han la",khoa3;
+//"Khoa ky dai han la",khoa3;   // In ra khoa dai han neu muon
 dem:=dem+1;
 end if;
 end for;
-"So thong diep thanh cong",sothongdiep[o],dem;
+"So thong",sothongdiep[o],"So khoang lap",u,"so bit lap",sobitlap[o],"So lan thanh cong",dem;
 "thoi gian",o,Cputime(t);
 end for;
